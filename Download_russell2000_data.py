@@ -1,32 +1,24 @@
-import wrds
+import yfinance as yf
 import pandas as pd
 
-# Connect to WRDS
-db = wrds.Connection()
+# Define the ticker symbol for Russell 2000 (^RUT on Yahoo Finance)
+ticker = '^RUT'
 
-# Define the start and end date for the data
+# Define the start and end dates
 start_date = '2024-01-01'
 end_date = '2024-10-15'
 
-# Query to find Russell 2000 Index from CRSP MSI dataset
-query = f"""
-SELECT caldt AS date, vwretd AS return
-FROM crsp.msi
-WHERE caldt >= '{start_date}' 
-AND caldt <= '{end_date}' 
-AND indxnam = 'Russell 2000';
-"""
+# Download the Russell 2000 historical data from Yahoo Finance
+russell_2000_data = yf.download(ticker, start=start_date, end=end_date)
 
-# Execute the query and retrieve the data
-russell_2000_data = db.raw_sql(query)
+# Keep only the 'Adj Close' and the index, which is the 'Date'
+russell_2000_data = russell_2000_data[['Adj Close']]
 
-# Close WRDS connection
-db.close()
+# Reset the index so 'Date' becomes a column
+russell_2000_data.reset_index(inplace=True)
 
-# Save the data to a CSV file
-russell_2000_data.to_csv('russell_2000_returns_2024.csv', index=False)
-
-# Display the first few rows of the data
+# Display the first few rows of the downloaded data
 print(russell_2000_data.head())
 
-
+# Save the data to a CSV file with only Date and Adj Close
+russell_2000_data.to_csv('russell_2000_adj_close_2024.csv', index=False)
