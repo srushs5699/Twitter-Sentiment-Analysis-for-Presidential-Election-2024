@@ -20,10 +20,10 @@ def analyze_sentiment(text):
         return None  # Return None for non-string entries
 
 # Apply sentiment analysis to the 'Tweet' column and handle non-string values
-df['Sentiment_Score'] = df['Tweet'].apply(analyze_sentiment)
+df['Overall_Sentiment_Score'] = df['Tweet'].apply(analyze_sentiment)
 
 # Save the resulting dataframe with sentiment analysis
-df.to_csv('combined_tweets_with_sentiment.csv', index=False)
+df.to_csv('./dataset/combined_tweets_with_sentiment.csv', index=False)
 
 # Display the first few rows of the dataframe to confirm results
 print(df.head())
@@ -36,7 +36,7 @@ all_tweets = ' '.join(df['Tweet'].dropna().astype(str))
 wordcloud = WordCloud(width=800, height=400, background_color='white').generate(all_tweets)
 
 # Save the WordCloud image to a file
-wordcloud.to_file('tweets_wordcloud.png')  # Save the wordcloud as a .png file
+wordcloud.to_file('./Result/tweets_wordcloud.png')  # Save the wordcloud as a .png file
 
 # Display the WordCloud
 plt.figure(figsize=(10, 5))

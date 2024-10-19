@@ -1,59 +1,41 @@
-import nltk
-from nltk.corpus import stopwords
-from nltk import FreqDist
-import string
 import pandas as pd
-from sklearn.feature_selection import chi2
 from sklearn.feature_extraction.text import CountVectorizer
-import numpy as np
+from sklearn.feature_selection import chi2
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score
+from sklearn.feature_extraction.text import TfidfVectorizer
 
-# Step 1: Input Tweets (assuming 'Cleaned_Text' column contains preprocessed tweet text and 'Sentiment' contains labels)
-tweets_df = pd.read_csv('./dataset/preprocessed_tweets.csv')
+# Load the dataset
+df = pd.read_csv('./dataset/tweets_with_contextual_sentiment.csv')
 
-# Step 3: Assign number of features n[i]
-n_values = [10, 100, 1000, 10000, 15000]
+# Check the structure of the dataset (ensure you have the necessary columns)
+print(df.head())
 
-# Step 4: Define word scoring using Chi-Square Test
-def wordscore_chi_square(tweets_df, n):
-    # Convert text data to features (bag of words) using CountVectorizer
-    vectorizer = CountVectorizer(max_features=n)
-    X = vectorizer.fit_transform(tweets_df['Cleaned_Text'])
-    
-    # Target (Sentiment): Assuming Sentiment is binary (1 for positive, 0 for negative)
-    y = tweets_df['Sentiment'].values
-    
-    # Chi-Square Test
-    chi_scores, p_values = chi2(X, y)
-    
-    # Build a dictionary of word scores based on Chi-Square test
-    word_scores = {}
-    feature_names = vectorizer.get_feature_names_out()
-    for i, score in enumerate(chi_scores):
-        word_scores[feature_names[i]] = score
-    
-    return word_scores
+# Step 1: Handle missing values in the 'Tweet' column
+df['Tweet'] = df['Tweet'].fillna('')  # Fill NaN values with an empty string
 
-# Step 5: Find the best words by sorting word scores
-def find_best_words(word_scores, n):
-    sorted_words = sorted(word_scores.items(), key=lambda item: item[1], reverse=True)
-    best_words = [word for word, score in sorted_words[:n]]
-    return best_words
+# Step 1: Preprocess the data
+# We'll use the 'Tweet' column as features (input) and 'Sentiment_Classification' as labels (target)
+X = df['Tweet']  # Feature: tweet text
+y = df['Sentiment_Classification']  # Target: sentiment classification (Pro-Trump, Pro-Harris, etc.)
 
-# Step 6: Evaluation (Here, it's a placeholder function)
-def evaluate(best_word_features, tweets_df):
-    # Placeholder function for evaluation
-    # This is where you'd implement a classifier using the selected best word features
-    print(f"Evaluating with {len(best_word_features)} features.")
+# Step 2: Convert the text data into numerical features using CountVectorizer (Bag of Words)
+vectorizer = CountVectorizer(stop_words='english', max_features=1000)  # Limiting to 1000 features
+X_vectorized = vectorizer.fit_transform(X)
 
-# Step 7: Main loop to process for n[i]
-for n in n_values:
-    print(f"\nProcessing for n = {n} features:")
-    
-    # Step 4: Calculate word scores using Chi-Square
-    word_scores = wordscore_chi_square(tweets_df, n)
-    
-    # Step 5: Find the best words
-    best_words = find_best_words(word_scores, n)
-    
-    # Step 6: Evaluate the best word features
-    evaluate(best_words, tweets_df)
+# Step 3: Apply Chi-Square Test to select the best features
+chi2_scores, p_values = chi2(X_vectorized, y)
+
+# Create a DataFrame to show feature importance based on chi2 score
+feature_names = vectorizer.get_feature_names_out()
+chi2_df = pd.DataFrame({'Feature': feature_names, 'Chi2_Score': chi2_scores, 'P_Value': p_values})
+chi2_df.sort_values(by='Chi2_Score', ascending=False, inplace=True)
+
+# Save the chi-square result to a CSV file
+chi2_df.to_csv('./Result/chi_square_feature_scores.csv', index=False)
+
+
+# Display the top features based on chi-square score
+print("Top features based on Chi-Square test:")
+print(chi2_df.head(20))
