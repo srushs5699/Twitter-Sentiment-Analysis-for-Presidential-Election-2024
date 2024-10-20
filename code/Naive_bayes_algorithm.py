@@ -51,6 +51,6 @@ print(f'Cross-Validation Accuracy: {cross_val_scores.mean() * 100:.2f}%')
 
 # Optional: Save the predictions to a CSV file for further analysis
 predictions_df = pd.DataFrame({'Tweet': df['Tweet'].iloc[y_test.index], 'Actual': y_test, 'Predicted': y_pred})
-predictions_df.to_csv('naive_bayes_predictions.csv', index=False)
+predictions_df.to_csv('./Result/naive_bayes_predictions.csv', index=False)
 
 print("Predictions saved to 'naive_bayes_predictions.csv'")
