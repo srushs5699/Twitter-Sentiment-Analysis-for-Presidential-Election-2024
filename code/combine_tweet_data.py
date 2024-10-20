@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+
 
 # Load both datasets
 df_with_dates = pd.read_csv('./dataset/dataset1_preprocessed_tweets_with_dates.csv')
@@ -19,4 +21,4 @@ combined_df = pd.concat([df_with_dates[['Date', 'Tweet']], df_without_dates[['Da
 # Save the combined dataframe to a new CSV file
 combined_df.to_csv('combined_tweets.csv', index=False)
 
-print("The files have been successfully combined into 'combined_tweets.csv' with dates formatted as mm/dd/yyyy.")
+
